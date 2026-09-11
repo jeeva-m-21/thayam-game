@@ -23,6 +23,7 @@ interface GameStore {
 
   // Actions
   setMode: (mode: GameMode) => void;
+  setAiDifficulty: (diff: 'easy' | 'medium' | 'hard') => void;
   resetGame: (players?: PlayerColor[]) => void;
   rollCurrentPlayer: () => void;
   selectPawn: (pawnId: number | null) => void;
@@ -42,6 +43,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set({ mode });
     get().resetGame();
   },
+
+  setAiDifficulty: (aiDifficulty: 'easy' | 'medium' | 'hard') => {
+    set({ aiDifficulty });
+  },
+
 
   resetGame: (players: PlayerColor[] = ['red', 'green']) => {
     const gameState = createGame(DEFAULT_BOARD, players);
