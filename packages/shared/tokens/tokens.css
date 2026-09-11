@@ -1,0 +1,32 @@
+/* Auto-generated from tokens.json - DO NOT EDIT MANUALLY */
+:root {
+  /* Colors */
+  --floor-oxide: #7C3B2E;
+  --floor-oxide-dark: #4A211A;
+  --kolam-chalk: #F4EEDD;
+  --brass: #AD8A4E;
+  --brass-bright: #D9B876;
+  --pawn-red: #B2312F;
+  --pawn-green: #4B7A46;
+  --pawn-yellow: #D9A22A;
+  --pawn-blue: #2E4C74;
+  --stone-ink: #2A2320;
+
+  /* Typography */
+  --font-display-en: 'Fraunces', serif;
+  --font-display-ta: 'Catamaran', sans-serif;
+  --font-body: 'Catamaran', sans-serif;
+  --font-numerals: 'Fraunces', monospace;
+  --base-font-size: 16px;
+  --line-height-body: 1.5;
+  --line-height-display: 1.15;
+
+  /* Motion */
+  --motion-dice-settle-min: 900ms;
+  --motion-dice-settle-max: 1300ms;
+  --motion-turn-camera-rotate: 400ms;
+  --motion-screen-transition: 180ms;
+
+  /* Accessibility */
+  --min-tap-target: 48px;
+}

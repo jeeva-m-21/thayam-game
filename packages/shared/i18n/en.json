@@ -1,0 +1,29 @@
+{
+  "app": {
+    "title": "Thayam",
+    "subtitle": "The ancient game of strategy and chance",
+    "rules": "Rules",
+    "settings": "Settings"
+  },
+  "game": {
+    "roll": "Roll Dice",
+    "rollAgain": "Roll Again",
+    "noMoves": "No moves available",
+    "turn": "{{player}}'s Turn",
+    "hasCutRequired": "Inner path locked. Cut an opponent's pawn first.",
+    "won": "{{player}} brought all four pawns home.",
+    "rematch": "Rematch",
+    "share": "Share Result",
+    "backToMenu": "Back to Menu"
+  },
+  "colors": {
+    "red": "Red",
+    "green": "Green",
+    "yellow": "Yellow",
+    "blue": "Blue"
+  },
+  "errors": {
+    "reconnecting": "Connection lost. Reconnecting...",
+    "disconnected": "Match ended — {{player}} disconnected."
+  }
+}
