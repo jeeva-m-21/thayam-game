@@ -226,6 +226,19 @@ export const Board2D: React.FC = () => {
                 />
               )}
 
+              {/* Home-stretch lock/unlock indicator */}
+              {cell.type === 'home-stretch' && cell.ownerColor && (
+                <span
+                  className={`absolute text-[9px] pointer-events-none select-none ${
+                    gameState.players[cell.ownerColor].hasCutOpponent
+                      ? 'text-emerald-400 opacity-60'
+                      : 'text-amber-400/80 opacity-70'
+                  }`}
+                >
+                  {gameState.players[cell.ownerColor].hasCutOpponent ? '🔓' : '🔒'}
+                </span>
+              )}
+
               {/* Center emblem */}
               {isCenter && (
                 <span className="text-[10px] text-brass-bright tracking-wider z-10">தாயம்</span>
@@ -295,6 +308,16 @@ export const Board2D: React.FC = () => {
           <span className="text-kolam-chalk/40 italic">Hover or tap on any square to view its rules and properties</span>
         )}
       </div>
+
+      {/* Inner Path Status Banner */}
+      {!activePlayer.hasCutOpponent && (
+        <div className="w-full mt-1.5 px-3 py-1.5 rounded-lg bg-amber-950/50 border border-amber-500/30 text-amber-300 text-[11px] flex items-center justify-center gap-1.5 shadow-sm">
+          <span>🔒</span>
+          <span>
+            Inner path locked for <strong className="uppercase">{activeColor}</strong>: Cut an opponent pawn (வெட்டு) to enter the center track!
+          </span>
+        </div>
+      )}
     </div>
   );
 };
