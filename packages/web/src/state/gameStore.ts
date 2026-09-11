@@ -8,9 +8,12 @@ import {
   DEFAULT_BOARD,
   pickAiMove,
   getCellIdAtPosition,
+  isBonusRoll,
+  isAtCenter,
 } from '@thayam/rules-engine';
 import type { GameState, Move, PlayerColor } from '@thayam/rules-engine';
 import { soundManager } from '../utils/audio';
+import { useStatsStore } from './statsStore';
 
 export type GameMode = 'local' | 'vs-ai';
 
@@ -63,6 +66,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   resetGame: (players: PlayerColor[] = ['red', 'green']) => {
     const gameState = createGame(DEFAULT_BOARD, players);
+    useStatsStore.getState().resetStats();
     set({
       gameState,
       selectedPawnId: null,
@@ -79,6 +83,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const roll = rollDice();
     const nextState = applyRoll(gameState, roll);
     const currColor = gameState.turnOrder[gameState.currentPlayerIndex];
+    useStatsStore.getState().recordRoll(currColor, isBonusRoll(roll.value));
     const log = `${currColor} rolled ${roll.value} (${roll.dieA} + ${roll.dieB})`;
 
     set((s) => ({
@@ -100,6 +105,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
   makeMove: (move: Move) => {
     const { gameState, mode } = get();
     if (gameState.phase !== 'waiting-for-move') return;
+
+    const movingPawn = gameState.players[move.playerColor].pawns.find((p) => p.id === move.pawnId);
+    const fromPos = movingPawn ? movingPawn.position : -1;
+    const distance = move.toPosition - (fromPos === -1 ? -1 : fromPos);
+    const reachedCenter = isAtCenter(move.toPosition, gameState.board.players[move.playerColor]);
+    useStatsStore.getState().recordMove(move.playerColor, Math.max(0, distance), move.cutsPawnIds.length, reachedCenter);
+    for (const cut of move.cutsPawnIds) {
+      useStatsStore.getState().recordPawnCut(cut.owner);
+    }
 
     const nextState = applyMove(gameState, move);
     let cutCell: string | null = null;
