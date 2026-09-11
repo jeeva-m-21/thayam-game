@@ -55,6 +55,34 @@ export const Board2D: React.FC = () => {
     movesForSelected.map((m) => getCellIdAtPosition(activePath, m.toPosition))
   );
 
+  const cutTargetCellIds = new Set(
+    movesForSelected
+      .filter((m) => m.cutsPawnIds.length > 0)
+      .map((m) => getCellIdAtPosition(activePath, m.toPosition))
+  );
+
+  const safeTargetCellIds = new Set(
+    movesForSelected
+      .filter((m) => {
+        const destCellId = getCellIdAtPosition(activePath, m.toPosition);
+        return gameState.board.cells[destCellId]?.isSafe;
+      })
+      .map((m) => getCellIdAtPosition(activePath, m.toPosition))
+  );
+
+  const trajectoryCellIds = new Set<string>();
+  if (selectedPawnId !== null) {
+    const pawn = activePlayer.pawns.find((p) => p.id === selectedPawnId);
+    const moves = currentLegalMoves.filter((m) => m.pawnId === selectedPawnId);
+    if (pawn && moves.length > 0) {
+      const targetMove = moves[0];
+      const startPos = pawn.position === OFF_BOARD ? 0 : pawn.position;
+      for (let pos = startPos + 1; pos < targetMove.toPosition; pos++) {
+        trajectoryCellIds.add(getCellIdAtPosition(activePath, pos));
+      }
+    }
+  }
+
   const entryCellId = activePath.outerSequence[0];
   const canEnterOffBoard =
     gameState.phase === 'waiting-for-move' &&
@@ -181,6 +209,9 @@ export const Board2D: React.FC = () => {
           }
 
           const tooltipText = getCellTooltip(cellId, cell);
+          const isCutTarget = cutTargetCellIds.has(cellId);
+          const isSafeTarget = safeTargetCellIds.has(cellId);
+          const isTrajectory = trajectoryCellIds.has(cellId);
 
           return (
             <div
@@ -202,8 +233,14 @@ export const Board2D: React.FC = () => {
                 }
               }}
               className={`relative flex items-center justify-center rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${
-                isTarget
-                  ? 'bg-brass-bright ring-4 ring-kolam-chalk shadow-lg scale-105 z-20'
+                isCutTarget
+                  ? 'bg-red-600 ring-4 ring-red-400 shadow-2xl scale-105 z-20 text-white animate-pulse'
+                  : isSafeTarget
+                  ? 'bg-emerald-600 ring-4 ring-emerald-300 shadow-2xl scale-105 z-20 text-white'
+                  : isTarget
+                  ? 'bg-brass-bright ring-4 ring-kolam-chalk shadow-lg scale-105 z-20 text-stone-ink'
+                  : isTrajectory
+                  ? 'bg-brass/40 border border-dashed border-brass-bright/70 ring-1 ring-brass/30'
                   : isCenter
                   ? 'bg-brass/60 border-2 border-brass-bright'
                   : cell.isSafe
@@ -211,6 +248,25 @@ export const Board2D: React.FC = () => {
                   : 'bg-stone-ink/60 border border-kolam-chalk/10 hover:border-kolam-chalk/30'
               }`}
             >
+              {/* Trajectory stepping pip */}
+              {isTrajectory && (
+                <div className="w-2.5 h-2.5 rounded-full bg-brass-bright shadow-sm animate-ping pointer-events-none" />
+              )}
+
+              {/* Tactical Cut target badge */}
+              {isCutTarget && (
+                <span className="absolute -top-2 px-1.5 py-0.2 rounded bg-red-700 text-white text-[8px] font-black uppercase shadow-md border border-red-300 z-30 pointer-events-none">
+                  ⚡ Cut
+                </span>
+              )}
+
+              {/* Tactical Safe target badge */}
+              {isSafeTarget && (
+                <span className="absolute -top-2 px-1.5 py-0.2 rounded bg-emerald-700 text-white text-[8px] font-black uppercase shadow-md border border-emerald-300 z-30 pointer-events-none">
+                  🛡️ Safe
+                </span>
+              )}
+
               {/* Safe cross emblem */}
               {cell.isSafe && (
                 <span className="absolute text-brass/40 text-lg select-none pointer-events-none">
