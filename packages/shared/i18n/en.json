@@ -1,9 +1,27 @@
 {
   "app": {
-    "title": "Thayam",
-    "subtitle": "The ancient game of strategy and chance",
+    "title": "Thayam: Veera Daayam",
+    "subtitle": "The ancient game of strategy, karma, and chance",
     "rules": "Rules",
-    "settings": "Settings"
+    "settings": "Settings",
+    "classic": "Classic 7×7"
+  },
+  "menu": {
+    "vs_ai": "VS AI",
+    "pass_and_play": "Pass & Play",
+    "online": "Online Multiplayer",
+    "create_room": "Create Room",
+    "join_room": "Join Room",
+    "room_code": "Room Code"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "audio": {
+    "mute": "Mute Audio",
+    "unmute": "Unmute Audio"
   },
   "game": {
     "roll": "Roll Dice",
@@ -12,9 +30,30 @@
     "turn": "{{player}}'s Turn",
     "hasCutRequired": "Inner path locked. Cut an opponent's pawn first.",
     "won": "{{player}} brought all four pawns home.",
-    "rematch": "Rematch",
+    "rematch": "Play Again",
     "share": "Share Result",
-    "backToMenu": "Back to Menu"
+    "backToMenu": "Back to Menu",
+    "aiThinking": "AI is thinking...",
+    "bonusRoll": "Bonus Roll!"
+  },
+  "stats": {
+    "title": "Match Statistics & Analytics",
+    "cuts_made": "Cuts Made",
+    "pawns_cut": "Times Cut",
+    "bonus_rolls": "Bonus Rolls",
+    "total_rolls": "Total Rolls",
+    "distance": "Distance Traveled",
+    "inner_unlocked": "Inner Unlocked",
+    "inner_locked": "Inner Locked",
+    "close": "Close"
+  },
+  "board": {
+    "center_tooltip": "Center Sanctuary (முற்றம்) — All 4 pawns must land here exactly to win.",
+    "safe_tooltip": "Safe Spot (மலக்கு) — Cross marks sanctuary. Pawns resting here are immune to cuts.",
+    "home_tooltip": "{{color}} Home (மனை) — Starting sanctuary. Pawns here cannot be cut.",
+    "inner_tooltip": "{{color}} Inner Stretch (உள் பாதை) — Requires ≥1 opponent cut to enter.",
+    "outer_tooltip": "Outer Track (சுற்றுப் பாதை) — Pawns advance clockwise around the perimeter.",
+    "vettu": "VETTU!"
   },
   "colors": {
     "red": "Red",
