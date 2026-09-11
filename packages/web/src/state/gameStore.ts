@@ -9,6 +9,7 @@ import {
   pickAiMove,
 } from '@thayam/rules-engine';
 import type { GameState, Move, PlayerColor } from '@thayam/rules-engine';
+import { soundManager } from '../utils/audio';
 
 export type GameMode = 'local' | 'vs-ai';
 
@@ -56,6 +57,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { gameState, mode, triggerAiTurnIfNeeded } = get();
     if (gameState.phase !== 'waiting-for-roll') return;
 
+    soundManager.playDiceRoll();
     const roll = rollDice();
     const nextState = applyRoll(gameState, roll);
     const currColor = gameState.turnOrder[gameState.currentPlayerIndex];
@@ -82,6 +84,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (gameState.phase !== 'waiting-for-move') return;
 
     const nextState = applyMove(gameState, move);
+    if (move.cutsPawnIds.length > 0) {
+      soundManager.playCut();
+    } else {
+      soundManager.playPawnMove();
+    }
+
+    if (nextState.winner) {
+      soundManager.playVictory();
+    }
+
     let log = `${move.playerColor} moved pawn ${move.pawnId + 1}`;
     if (move.cutsPawnIds.length > 0) {
       log += ` & cut ${move.cutsPawnIds.length} opponent pawn(s)!`;
@@ -100,6 +112,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       setTimeout(() => get().triggerAiTurnIfNeeded(), 600);
     }
   },
+
 
   triggerAiTurnIfNeeded: () => {
     const { gameState, mode, aiDifficulty, rollCurrentPlayer, makeMove } = get();
