@@ -1,5 +1,12 @@
-// @thayam/rules-engine
-// Pure TypeScript rules engine for Thayam (Dayakattai)
-// Zero runtime dependencies — runs identically on client and server
+/**
+ * @thayam/rules-engine — Public API
+ * Pure TypeScript, zero runtime dependencies.
+ */
 
-export {};
+export * from './types.js';
+export * from './dice.js';
+export * from './board-data.js';
+export * from './moves.js';
+export * from './engine.js';
+export * from './ai.js';
+
