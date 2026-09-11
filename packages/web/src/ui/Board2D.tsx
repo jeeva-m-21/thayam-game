@@ -35,6 +35,7 @@ const COLOR_MAP: Record<PlayerColor, string> = {
 
 export const Board2D: React.FC = () => {
   const { gameState, selectedPawnId, selectPawn, makeMove } = useGameStore();
+  const [hoveredCellInfo, setHoveredCellInfo] = React.useState<string | null>(null);
   const activeColor = gameState.turnOrder[gameState.currentPlayerIndex];
   const activePlayer = gameState.players[activeColor];
   const activePath = gameState.board.players[activeColor];
@@ -54,8 +55,26 @@ export const Board2D: React.FC = () => {
     movesForSelected.map(m => getCellIdAtPosition(activePath, m.toPosition))
   );
 
+  const getCellTooltip = (cellId: string, cell: typeof gameState.board.cells[string]): string => {
+    const isHome = Object.values(gameState.board.players).some(p => p.homeCellId === cellId);
+    if (cell.type === 'center') {
+      return 'முற்றம் (Center Sanctuary) — Sacred goal. All 4 pawns must land here exactly to win.';
+    }
+    if (isHome && cell.ownerColor) {
+      return `மனை (${cell.ownerColor.toUpperCase()} Home) — Starting sanctuary. Pawns here cannot be cut.`;
+    }
+    if (cell.isSafe) {
+      return 'மலக்கு (Safe Spot) — Cross marks sanctuary. Pawns resting here are immune to cuts.';
+    }
+    if (cell.type === 'home-stretch' && cell.ownerColor) {
+      return `உள் பாதை (${cell.ownerColor.toUpperCase()} Inner Stretch) — Requires ≥1 opponent cut to enter.`;
+    }
+    return 'சுற்றுப் பாதை (Outer Track) — Pawns advance clockwise around the perimeter.';
+  };
+
   return (
-    <div className="relative w-full max-w-[480px] aspect-square p-2 bg-floor-oxide rounded-2xl shadow-2xl border-4 border-brass">
+    <div className="relative w-full max-w-[480px] flex flex-col items-center">
+      <div className="relative w-full aspect-square p-2 bg-floor-oxide rounded-2xl shadow-2xl border-4 border-brass">
       {/* 7x7 Grid */}
       <div className="grid grid-cols-7 grid-rows-7 gap-1 w-full h-full bg-stone-ink/40 p-2 rounded-xl">
         {Array.from({ length: 49 }).map((_, idx) => {
@@ -95,9 +114,14 @@ export const Board2D: React.FC = () => {
             }
           }
 
+          const tooltipText = getCellTooltip(cellId, cell);
+
           return (
             <div
               key={cellId}
+              title={tooltipText}
+              onMouseEnter={() => setHoveredCellInfo(tooltipText)}
+              onMouseLeave={() => setHoveredCellInfo(null)}
               onClick={() => {
                 if (isTarget && selectedPawnId !== null) {
                   const chosenMove = movesForSelected.find(
@@ -179,6 +203,16 @@ export const Board2D: React.FC = () => {
             </div>
           );
         })}
+      </div>
+      </div>
+
+      {/* Contextual Rule Tip Bar */}
+      <div className="w-full mt-2 min-h-[28px] px-3 py-1 rounded-lg bg-stone-ink/60 border border-kolam-chalk/15 text-center text-xs text-kolam-chalk/80 transition-all flex items-center justify-center">
+        {hoveredCellInfo ? (
+          <span className="font-medium text-brass-bright animate-fade-in">{hoveredCellInfo}</span>
+        ) : (
+          <span className="text-kolam-chalk/40 italic">Hover or tap on any square to view its rules and properties</span>
+        )}
       </div>
     </div>
   );
