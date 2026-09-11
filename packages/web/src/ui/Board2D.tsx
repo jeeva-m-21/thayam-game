@@ -52,11 +52,22 @@ export const Board2D: React.FC = () => {
     : [];
 
   const targetCellIds = new Set(
-    movesForSelected.map(m => getCellIdAtPosition(activePath, m.toPosition))
+    movesForSelected.map((m) => getCellIdAtPosition(activePath, m.toPosition))
   );
+
+  const entryCellId = activePath.outerSequence[0];
+  const canEnterOffBoard =
+    gameState.phase === 'waiting-for-move' &&
+    gameState.currentRoll?.value === 1 &&
+    currentLegalMoves.some(
+      (m) => activePlayer.pawns.find((p) => p.id === m.pawnId)?.position === OFF_BOARD
+    );
 
   const getCellTooltip = (cellId: string, cell: typeof gameState.board.cells[string]): string => {
     const isHome = Object.values(gameState.board.players).some(p => p.homeCellId === cellId);
+    if (canEnterOffBoard && cellId === entryCellId) {
+      return `✨ தொடக்க களம் (Entry Square) — தாயம்! Click here to place your pawn into the game!`;
+    }
     if (cell.type === 'center') {
       return 'முற்றம் (Center Sanctuary) — Sacred goal. All 4 pawns must land here exactly to win.';
     }
@@ -74,6 +85,60 @@ export const Board2D: React.FC = () => {
 
   return (
     <div className="relative w-full max-w-[480px] flex flex-col items-center">
+      {/* Off-Board Reserve Staging Areas for Players */}
+      <div className="w-full flex items-center justify-between px-2.5 py-1.5 mb-2 bg-stone-ink/80 backdrop-blur-sm rounded-xl border border-kolam-chalk/15 shadow-md">
+        {gameState.turnOrder.map((color) => {
+          const pState = gameState.players[color];
+          const offBoardPawns = pState.pawns.filter((p) => p.position === OFF_BOARD);
+          const isCurrentActive = color === activeColor;
+          const canPlayerEnter = isCurrentActive && canEnterOffBoard;
+
+          return (
+            <div
+              key={color}
+              className={`flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all ${
+                isCurrentActive ? 'bg-kolam-chalk/15 border border-brass-bright/60 shadow' : 'opacity-60'
+              }`}
+            >
+              <div
+                className="w-2.5 h-2.5 rounded-full shadow"
+                style={{ backgroundColor: COLOR_MAP[color] }}
+              />
+              <span className="text-[10px] font-bold uppercase text-kolam-chalk/90 mr-0.5">
+                {color.slice(0, 1).toUpperCase()}
+              </span>
+              <div className="flex items-center gap-1">
+                {offBoardPawns.length === 0 ? (
+                  <span className="text-[9px] text-kolam-chalk/40 italic">In Play</span>
+                ) : (
+                  offBoardPawns.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        if (canPlayerEnter) {
+                          const entryMove = currentLegalMoves.find((m) => m.pawnId === p.id);
+                          if (entryMove) makeMove(entryMove);
+                        }
+                      }}
+                      disabled={!canPlayerEnter}
+                      title={canPlayerEnter ? `Click to enter Pawn #${p.id + 1} (தாயம்)!` : `Pawn #${p.id + 1} in Reserve`}
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow border transition-all ${
+                        canPlayerEnter
+                          ? 'animate-pawn-hop ring-2 ring-brass-bright cursor-pointer hover:scale-115'
+                          : 'opacity-60 border-black/40 cursor-default'
+                      }`}
+                      style={{ backgroundColor: COLOR_MAP[color] }}
+                    >
+                      {p.id + 1}
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       <div className="relative w-full aspect-square p-2 bg-floor-oxide rounded-2xl shadow-2xl border-4 border-brass">
       {/* 7x7 Grid */}
       <div className="grid grid-cols-7 grid-rows-7 gap-1 w-full h-full bg-stone-ink/40 p-2 rounded-xl">
@@ -95,7 +160,8 @@ export const Board2D: React.FC = () => {
             );
           }
 
-          const isTarget = targetCellIds.has(cellId);
+          const isDirectEntryTarget = canEnterOffBoard && selectedPawnId === null && cellId === entryCellId;
+          const isTarget = targetCellIds.has(cellId) || isDirectEntryTarget;
           const isHome = Object.values(gameState.board.players).some(p => p.homeCellId === cellId);
           const isCenter = cell.type === 'center';
 
@@ -128,6 +194,11 @@ export const Board2D: React.FC = () => {
                     m => getCellIdAtPosition(activePath, m.toPosition) === cellId
                   );
                   if (chosenMove) makeMove(chosenMove);
+                } else if (isDirectEntryTarget) {
+                  const entryMove = currentLegalMoves.find(
+                    (m) => activePlayer.pawns.find((p) => p.id === m.pawnId)?.position === OFF_BOARD
+                  );
+                  if (entryMove) makeMove(entryMove);
                 }
               }}
               className={`relative flex items-center justify-center rounded-lg text-xs font-bold transition-all duration-200 cursor-pointer ${

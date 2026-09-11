@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Center } from '@react-three/drei';
 import { useGameStore } from '../state/gameStore';
-import { getCellIdAtPosition, OFF_BOARD } from '@thayam/rules-engine';
+import { getCellIdAtPosition, OFF_BOARD, legalMoves } from '@thayam/rules-engine';
 import { Dice3D } from './Dice3D';
 import type { PlayerColor } from '@thayam/rules-engine';
 
@@ -24,6 +24,13 @@ const CELL_3D_POS: Record<string, [number, number, number]> = {
   hy1: [0, 0.08, 2],   hy2: [0, 0.08, 1],
   hb1: [2, 0.08, 0],   hb2: [1, 0.08, 0],
   center: [0, 0.08, 0],
+};
+
+const RESERVE_3D_POS: Record<PlayerColor, (pawnId: number) => [number, number, number]> = {
+  red: (id) => [-4.2, 0.08, -1.05 + id * 0.7],
+  green: (id) => [-1.05 + id * 0.7, 0.08, -4.2],
+  yellow: (id) => [-1.05 + id * 0.7, 0.08, 4.2],
+  blue: (id) => [4.2, 0.08, -1.05 + id * 0.7],
 };
 
 function BoardMesh() {
@@ -56,30 +63,72 @@ function BoardMesh() {
           </mesh>
         );
       })}
+      {/* 4 Player Reserve Trays / Pedestals */}
+      <mesh position={[-4.2, -0.05, 0]}>
+        <boxGeometry args={[0.7, 0.1, 3.2]} />
+        <meshStandardMaterial color="#4A261E" roughness={0.6} metalness={0.2} />
+      </mesh>
+      <mesh position={[4.2, -0.05, 0]}>
+        <boxGeometry args={[0.7, 0.1, 3.2]} />
+        <meshStandardMaterial color="#4A261E" roughness={0.6} metalness={0.2} />
+      </mesh>
+      <mesh position={[0, -0.05, -4.2]}>
+        <boxGeometry args={[3.2, 0.1, 0.7]} />
+        <meshStandardMaterial color="#4A261E" roughness={0.6} metalness={0.2} />
+      </mesh>
+      <mesh position={[0, -0.05, 4.2]}>
+        <boxGeometry args={[3.2, 0.1, 0.7]} />
+        <meshStandardMaterial color="#4A261E" roughness={0.6} metalness={0.2} />
+      </mesh>
     </group>
   );
 }
 
 function Pawns3D() {
-  const { gameState, selectedPawnId } = useGameStore();
+  const { gameState, selectedPawnId, selectPawn, makeMove } = useGameStore();
+  const activeColor = gameState.turnOrder[gameState.currentPlayerIndex];
+  const currentLegalMoves =
+    gameState.currentRoll && gameState.phase === 'waiting-for-move'
+      ? legalMoves(gameState, gameState.currentRoll.value)
+      : [];
 
+  const availablePawnIds = new Set(currentLegalMoves.map((m) => m.pawnId));
   const renderedPawns: React.ReactNode[] = [];
 
   for (const color of gameState.turnOrder) {
     const pState = gameState.players[color];
     const path = gameState.board.players[color];
+    const isCurrentActive = color === activeColor;
 
     for (const p of pState.pawns) {
-      if (p.position === OFF_BOARD) continue;
+      const isOffBoard = p.position === OFF_BOARD;
+      const cellPos = isOffBoard
+        ? RESERVE_3D_POS[color](p.id)
+        : CELL_3D_POS[getCellIdAtPosition(path, p.position)] || [0, 0, 0];
 
-      const cellId = getCellIdAtPosition(path, p.position);
-      const cellPos = CELL_3D_POS[cellId] || [0, 0, 0];
-      const isSelected = color === gameState.turnOrder[gameState.currentPlayerIndex] && selectedPawnId === p.id;
+      const canMove = isCurrentActive && availablePawnIds.has(p.id);
+      const isSelected = isCurrentActive && selectedPawnId === p.id;
+      const canEnter = isCurrentActive && isOffBoard && canMove;
 
       renderedPawns.push(
         <mesh
           key={`${color}-${p.id}`}
-          position={[cellPos[0], cellPos[1] + 0.3 + (isSelected ? 0.2 : 0), cellPos[2]]}
+          position={[
+            cellPos[0],
+            cellPos[1] + 0.3 + (isSelected ? 0.25 : canEnter ? 0.18 : 0),
+            cellPos[2],
+          ]}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (canMove) {
+              const moves = currentLegalMoves.filter((m) => m.pawnId === p.id);
+              if (moves.length === 1) {
+                makeMove(moves[0]);
+              } else {
+                selectPawn(isSelected ? null : p.id);
+              }
+            }
+          }}
           castShadow
         >
           {/* Classical bell-shaped brass/wood pawn */}
@@ -88,8 +137,8 @@ function Pawns3D() {
             color={PAWN_COLORS[color]}
             roughness={0.4}
             metalness={0.4}
-            emissive={isSelected ? PAWN_COLORS[color] : '#000000'}
-            emissiveIntensity={isSelected ? 0.6 : 0}
+            emissive={isSelected ? '#F7D070' : canMove ? PAWN_COLORS[color] : '#000000'}
+            emissiveIntensity={isSelected ? 0.8 : canMove ? 0.45 : 0}
           />
         </mesh>
       );
