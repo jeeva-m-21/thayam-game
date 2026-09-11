@@ -1,0 +1,47 @@
+{
+  "name": "@thayam/desktop",
+  "version": "1.0.0",
+  "description": "Thayam (Dayakattai) Classic 7x7 Digital Game - Desktop Electron App",
+  "main": "src/main.cjs",
+  "private": true,
+  "scripts": {
+    "copy-renderer": "node scripts/copy-renderer.cjs",
+    "start": "electron .",
+    "build": "pnpm copy-renderer",
+    "dist:win": "pnpm copy-renderer && electron-builder --win --x64"
+  },
+  "devDependencies": {
+    "electron": "^31.6.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.thayam.game",
+    "productName": "Thayam Veera Daayam",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "renderer/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
