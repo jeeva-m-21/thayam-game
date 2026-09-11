@@ -5,6 +5,7 @@ import { DiceControls } from './ui/DiceControls';
 import { StatsModal } from './ui/StatsModal';
 import { MultiplayerModal } from './ui/MultiplayerModal';
 import { MoveLog } from './ui/MoveLog';
+import { VictoryModal } from './ui/VictoryModal';
 import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
 
@@ -164,25 +165,13 @@ export const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Winner Modal */}
+      {/* Winner Celebration Modal */}
       {gameState.winner && (
-        <div className="fixed inset-0 z-50 bg-stone-ink/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-floor-oxide border-2 border-brass-bright p-6 rounded-2xl shadow-2xl text-center max-w-sm flex flex-col items-center gap-4">
-            <span className="text-4xl">🏆</span>
-            <h2 className="text-2xl font-display font-bold text-brass-bright">
-              {gameState.winner.toUpperCase()} WINS!
-            </h2>
-            <p className="text-sm text-kolam-chalk/80">
-              All 4 pawns reached the sacred center sanctuary.
-            </p>
-            <button
-              onClick={() => resetGame()}
-              className="px-6 py-2.5 bg-brass-bright text-stone-ink font-bold rounded-xl shadow-lg hover:brightness-110 active:scale-95"
-            >
-              Play Again
-            </button>
-          </div>
-        </div>
+        <VictoryModal
+          winner={gameState.winner}
+          onRematch={() => resetGame()}
+          onOpenStats={() => setIsStatsOpen(true)}
+        />
       )}
 
       {/* Match Statistics Modal */}
