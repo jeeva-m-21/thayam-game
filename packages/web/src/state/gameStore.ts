@@ -26,6 +26,7 @@ interface GameStore {
   isAiThinking: boolean;
   history: string[];
   isMuted: boolean;
+  volume: number;
   lastCutCellId: string | null;
   onlineRoomId: string | null;
   onlineColor: PlayerColor | null;
@@ -36,6 +37,7 @@ interface GameStore {
   setMode: (mode: GameMode) => void;
   setAiDifficulty: (diff: 'easy' | 'medium' | 'hard') => void;
   toggleMute: () => void;
+  setVolume: (vol: number) => void;
   showToast: (msg: string) => void;
   joinOnlineRoom: (roomId: string, color: PlayerColor) => void;
   resetGame: (players?: PlayerColor[]) => void;
@@ -53,6 +55,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   isAiThinking: false,
   history: ['Game initialized.'],
   isMuted: soundManager.isMuted(),
+  volume: soundManager.getVolume(),
   lastCutCellId: null,
   onlineRoomId: null,
   onlineColor: null,
@@ -97,6 +100,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const next = !get().isMuted;
     soundManager.setMuted(next);
     set({ isMuted: next });
+  },
+
+  setVolume: (volume: number) => {
+    soundManager.setVolume(volume);
+    set({ volume, isMuted: soundManager.isMuted() });
   },
 
   setAiDifficulty: (aiDifficulty: 'easy' | 'medium' | 'hard') => {

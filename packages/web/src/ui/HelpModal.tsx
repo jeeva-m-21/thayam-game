@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useGameStore } from '../state/gameStore';
+import { soundManager } from '../utils/audio';
 
 interface HelpModalProps {
   isOpen: boolean;
@@ -8,7 +10,8 @@ interface HelpModalProps {
 
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'rules' | 'hotkeys'>('rules');
+  const [tab, setTab] = useState<'rules' | 'hotkeys' | 'audio'>('rules');
+  const { isMuted, toggleMute, volume, setVolume } = useGameStore();
 
   if (!isOpen) return null;
 
@@ -32,26 +35,36 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Tab switch */}
-        <div className="flex border-b border-kolam-chalk/10 bg-stone-ink/30 px-6 pt-3 gap-2">
+        <div className="flex border-b border-kolam-chalk/10 bg-stone-ink/30 px-6 pt-3 gap-2 overflow-x-auto">
           <button
             onClick={() => setTab('rules')}
-            className={`pb-2.5 px-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${
+            className={`pb-2.5 px-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
               tab === 'rules'
                 ? 'border-brass-bright text-brass-bright'
                 : 'border-transparent text-kolam-chalk/50 hover:text-kolam-chalk/80'
             }`}
           >
-            📖 Sacred Rules (விதிகள்)
+            📖 Sacred Rules
           </button>
           <button
             onClick={() => setTab('hotkeys')}
-            className={`pb-2.5 px-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 ${
+            className={`pb-2.5 px-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
               tab === 'hotkeys'
                 ? 'border-brass-bright text-brass-bright'
                 : 'border-transparent text-kolam-chalk/50 hover:text-kolam-chalk/80'
             }`}
           >
-            ⌨️ Keyboard Shortcuts
+            ⌨️ Hotkeys
+          </button>
+          <button
+            onClick={() => setTab('audio')}
+            className={`pb-2.5 px-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap ${
+              tab === 'audio'
+                ? 'border-brass-bright text-brass-bright'
+                : 'border-transparent text-kolam-chalk/50 hover:text-kolam-chalk/80'
+            }`}
+          >
+            🔊 Sound & Audio
           </button>
         </div>
 
@@ -104,7 +117,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 </p>
               </div>
             </>
-          ) : (
+          ) : tab === 'hotkeys' ? (
             <div className="flex flex-col gap-2.5">
               <div className="p-3 rounded-xl bg-stone-ink/60 border border-kolam-chalk/15 flex items-center justify-between">
                 <span>Roll Dice / Quick Enter Pawn:</span>
@@ -141,6 +154,102 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
                 <span className="px-2 py-1 rounded bg-kolam-chalk/20 font-mono font-bold text-brass-bright">
                   L
                 </span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {/* Volume Slider Card */}
+              <div className="p-4 rounded-2xl bg-stone-ink/60 border border-brass/30 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-brass-bright text-sm flex items-center gap-1.5">
+                    <span>🎚️</span> Master Sound Volume
+                  </span>
+                  <span className="font-mono text-xs font-bold text-brass-bright bg-stone-ink/80 px-2 py-0.5 rounded-lg border border-kolam-chalk/20">
+                    {Math.round(volume * 100)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={Math.round(volume * 100)}
+                  onChange={(e) => setVolume(Number(e.target.value) / 100)}
+                  className="w-full accent-brass-bright cursor-pointer"
+                />
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[10px] text-kolam-chalk/50">Mute (0%)</span>
+                  <span className="text-[10px] text-kolam-chalk/50">Max (100%)</span>
+                </div>
+              </div>
+
+              {/* Mute Toggle */}
+              <div className="p-3.5 rounded-xl bg-stone-ink/60 border border-kolam-chalk/15 flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="font-bold text-kolam-chalk">Sound Effects Audio</span>
+                  <span className="text-[10px] text-kolam-chalk/60">Toggle game sound & temple bells</span>
+                </div>
+                <button
+                  onClick={toggleMute}
+                  className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition-all border ${
+                    isMuted
+                      ? 'bg-crimson/20 border-crimson text-crimson'
+                      : 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                  }`}
+                >
+                  {isMuted ? '🔇 Muted' : '🔊 Active'}
+                </button>
+              </div>
+
+              {/* Sound Preview Test Buttons */}
+              <div className="flex flex-col gap-2">
+                <span className="font-bold text-brass-bright text-xs tracking-wider uppercase">
+                  🎧 Test Sound Design (Synthesized Audio API)
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => soundManager.playDiceRoll()}
+                    className="p-2.5 rounded-xl bg-stone-ink/70 hover:bg-stone-ink border border-kolam-chalk/20 hover:border-brass-bright text-left flex items-center gap-2 transition-all active:scale-95"
+                  >
+                    <span>🎲</span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-kolam-chalk text-[11px]">Dice Clack</span>
+                      <span className="text-[9px] text-kolam-chalk/50">Metallic roll</span>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => soundManager.playPawnMove()}
+                    className="p-2.5 rounded-xl bg-stone-ink/70 hover:bg-stone-ink border border-kolam-chalk/20 hover:border-brass-bright text-left flex items-center gap-2 transition-all active:scale-95"
+                  >
+                    <span>♟️</span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-kolam-chalk text-[11px]">Pawn Hop</span>
+                      <span className="text-[9px] text-kolam-chalk/50">Wood placement</span>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => soundManager.playCut()}
+                    className="p-2.5 rounded-xl bg-stone-ink/70 hover:bg-stone-ink border border-kolam-chalk/20 hover:border-brass-bright text-left flex items-center gap-2 transition-all active:scale-95"
+                  >
+                    <span>⚡</span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-kolam-chalk text-[11px]">Vettu Strike</span>
+                      <span className="text-[9px] text-kolam-chalk/50">Sharp clack impact</span>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => soundManager.playBonusRoll(1)}
+                    className="p-2.5 rounded-xl bg-stone-ink/70 hover:bg-stone-ink border border-kolam-chalk/20 hover:border-brass-bright text-left flex items-center gap-2 transition-all active:scale-95"
+                  >
+                    <span>🔔</span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-kolam-chalk text-[11px]">Thayam Bell</span>
+                      <span className="text-[9px] text-kolam-chalk/50">Bronze bell chime</span>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           )}
