@@ -145,7 +145,45 @@ function Pawns3D() {
     }
   }
 
-  return <group>{renderedPawns}</group>;
+  // Render 3D destination landing markers if a pawn is selected
+  const targetMarkers: React.ReactNode[] = [];
+  if (selectedPawnId !== null) {
+    const movesForSelected = currentLegalMoves.filter((m) => m.pawnId === selectedPawnId);
+    const path = gameState.board.players[activeColor];
+
+    movesForSelected.forEach((m, idx) => {
+      const cellId = getCellIdAtPosition(path, m.toPosition);
+      const pos = CELL_3D_POS[cellId];
+      if (pos) {
+        const isCut = m.cutsPawnIds.length > 0;
+        targetMarkers.push(
+          <mesh
+            key={`target-${idx}`}
+            position={[pos[0], pos[1] + 0.05, pos[2]]}
+            onClick={(e) => {
+              e.stopPropagation();
+              makeMove(m);
+            }}
+          >
+            <ringGeometry args={[0.22, 0.38, 24]} />
+            <meshBasicMaterial
+              color={isCut ? '#EF4444' : '#FCD34D'}
+              transparent
+              opacity={0.85}
+              side={2}
+            />
+          </mesh>
+        );
+      }
+    });
+  }
+
+  return (
+    <group>
+      {renderedPawns}
+      {targetMarkers}
+    </group>
+  );
 }
 
 export const Scene3D: React.FC = () => {
