@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Board2D } from './ui/Board2D';
 import { Scene3D } from './scenes/Scene3D';
 import { DiceControls } from './ui/DiceControls';
+import { StatsModal } from './ui/StatsModal';
 import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
 
@@ -19,6 +20,7 @@ export const App: React.FC = () => {
   } = useGameStore();
   const { t, i18n } = useTranslation();
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
@@ -117,6 +119,16 @@ export const App: React.FC = () => {
             )}
           </button>
 
+          {/* Match Statistics Button */}
+          <button
+            onClick={() => setIsStatsOpen(true)}
+            className="p-1.5 px-2.5 rounded-xl bg-kolam-chalk/10 hover:bg-kolam-chalk/20 border border-kolam-chalk/20 text-kolam-chalk/80 hover:text-kolam-chalk transition-all text-xs font-semibold flex items-center gap-1"
+            title="Match Analytics & Statistics"
+          >
+            <span>📊</span>
+            <span className="hidden sm:inline">Stats</span>
+          </button>
+
           {/* Language Switch */}
           <button
             onClick={toggleLanguage}
@@ -170,6 +182,9 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Match Statistics Modal */}
+      <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} />
     </div>
   );
 };
