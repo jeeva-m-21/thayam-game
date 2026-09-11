@@ -45,6 +45,9 @@ export const MoveLog: React.FC = () => {
 
       {/* Log entries */}
       <div
+        role="log"
+        aria-live="polite"
+        aria-atomic="false"
         className={`flex flex-col gap-1.5 overflow-y-auto transition-all ${
           isExpanded ? 'max-h-60' : 'max-h-24'
         }`}

@@ -73,13 +73,23 @@ export const DiceControls: React.FC = () => {
   ]);
 
   return (
-    <div className="flex flex-col items-center gap-4 w-full max-w-[480px] bg-stone-ink/80 backdrop-blur-sm p-4 rounded-2xl border border-kolam-chalk/20 shadow-xl">
+    <div className="flex flex-col items-center gap-4 w-full max-w-[480px] bg-stone-ink/80 backdrop-blur-sm p-4 rounded-2xl border border-kolam-chalk/20 shadow-xl" role="region" aria-label="Dice and move controls">
+      {/* Screen reader live region for game state announcements */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true" role="status">
+        {gameState.phase === 'waiting-for-roll'
+          ? `${activeColor} player turn. Press Space or click Roll to cast dice.`
+          : gameState.currentRoll
+          ? `${activeColor} rolled ${gameState.currentRoll.value}. ${currentLegalMoves.length} moves available.`
+          : ''}
+      </div>
+
       {/* Status Bar */}
       <div className="flex items-center justify-between w-full px-2">
         <div className="flex items-center gap-2">
           <div
             className="w-4 h-4 rounded-full shadow"
             style={{ backgroundColor: COLOR_MAP[activeColor] }}
+            aria-hidden="true"
           />
           <span className="font-bold text-sm uppercase tracking-wider">
             {t(`player.${activeColor}`)}'s turn
@@ -141,6 +151,7 @@ export const DiceControls: React.FC = () => {
         <button
           onClick={rollCurrentPlayer}
           disabled={isAiThinking}
+          aria-label={`${t('game.roll')} for ${activeColor}`}
           className="w-full py-3.5 bg-gradient-to-r from-brass to-brass-bright text-stone-ink font-bold rounded-xl shadow-lg hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 text-base tracking-wider uppercase font-display flex items-center justify-center gap-2"
         >
           <span>🎲</span>
@@ -150,7 +161,7 @@ export const DiceControls: React.FC = () => {
 
       {/* Interactive Move Action Panel */}
       {gameState.phase === 'waiting-for-move' && (
-        <div className="w-full flex flex-col gap-2.5">
+        <div className="w-full flex flex-col gap-2.5" role="group" aria-label="Available pawn moves">
           {/* Quick 1-Click Entry Button for Thayam */}
           {gameState.currentRoll?.value === 1 &&
             currentLegalMoves.some(
@@ -163,6 +174,7 @@ export const DiceControls: React.FC = () => {
                   );
                   if (entryMove) makeMove(entryMove);
                 }}
+                aria-label="Enter reserve pawn onto board with Thayam roll of 1"
                 className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-stone-ink font-bold text-sm uppercase tracking-wider rounded-xl shadow-lg hover:brightness-110 active:scale-95 flex items-center justify-center gap-2 border-2 border-brass-bright animate-pawn-hop"
               >
                 <span>✨</span>
