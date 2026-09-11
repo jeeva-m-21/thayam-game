@@ -6,6 +6,7 @@ import { StatsModal } from './ui/StatsModal';
 import { MultiplayerModal } from './ui/MultiplayerModal';
 import { MoveLog } from './ui/MoveLog';
 import { VictoryModal } from './ui/VictoryModal';
+import { HelpModal } from './ui/HelpModal';
 import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
 
@@ -29,10 +30,34 @@ export const App: React.FC = () => {
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
   };
+
+  React.useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+
+      if (e.key === '?' || e.key === 'h' || e.key === 'H') {
+        e.preventDefault();
+        setIsHelpOpen((prev) => !prev);
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        setIsStatsOpen((prev) => !prev);
+      } else if (e.key === 'm' || e.key === 'M') {
+        e.preventDefault();
+        toggleMute();
+      } else if (e.key === 'l' || e.key === 'L') {
+        e.preventDefault();
+        toggleLanguage();
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [toggleMute, i18n]);
 
   return (
     <div className="flex flex-col items-center justify-between min-h-screen w-full p-3 md:p-6 max-w-5xl mx-auto">
@@ -139,10 +164,20 @@ export const App: React.FC = () => {
           <button
             onClick={() => setIsStatsOpen(true)}
             className="p-1.5 px-2.5 rounded-xl bg-kolam-chalk/10 hover:bg-kolam-chalk/20 border border-kolam-chalk/20 text-kolam-chalk/80 hover:text-kolam-chalk transition-all text-xs font-semibold flex items-center gap-1"
-            title="Match Analytics & Statistics"
+            title="Match Analytics & Statistics (Press S)"
           >
             <span>📊</span>
             <span className="hidden sm:inline">Stats</span>
+          </button>
+
+          {/* Rules & Help Button */}
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className="p-1.5 px-2.5 rounded-xl bg-kolam-chalk/10 hover:bg-kolam-chalk/20 border border-kolam-chalk/20 text-kolam-chalk/80 hover:text-kolam-chalk transition-all text-xs font-semibold flex items-center gap-1"
+            title="Game Rules & Keyboard Shortcuts (Press H or ?)"
+          >
+            <span>📜</span>
+            <span className="hidden sm:inline">Rules</span>
           </button>
 
           {/* Language Switch */}
@@ -189,6 +224,9 @@ export const App: React.FC = () => {
         assignedColor={onlineColor}
         isConnected={true}
       />
+
+      {/* Rules & Help Modal */}
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
     </div>
   );
 };
