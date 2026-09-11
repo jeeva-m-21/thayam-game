@@ -7,6 +7,7 @@ import { MultiplayerModal } from './ui/MultiplayerModal';
 import { MoveLog } from './ui/MoveLog';
 import { VictoryModal } from './ui/VictoryModal';
 import { HelpModal } from './ui/HelpModal';
+import { PlayerSetupModal } from './ui/PlayerSetupModal';
 import { Toast } from './ui/Toast';
 import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +33,7 @@ export const App: React.FC = () => {
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isSetupOpen, setIsSetupOpen] = useState(false);
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
@@ -47,6 +49,9 @@ export const App: React.FC = () => {
       } else if (e.key === 's' || e.key === 'S') {
         e.preventDefault();
         setIsStatsOpen((prev) => !prev);
+      } else if (e.key === 'p' || e.key === 'P') {
+        e.preventDefault();
+        setIsSetupOpen((prev) => !prev);
       } else if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
         toggleMute();
@@ -171,6 +176,16 @@ export const App: React.FC = () => {
             <span className="hidden sm:inline">Stats</span>
           </button>
 
+          {/* Player & Match Setup Button */}
+          <button
+            onClick={() => setIsSetupOpen(true)}
+            className="p-1.5 px-2.5 rounded-xl bg-kolam-chalk/10 hover:bg-kolam-chalk/20 border border-kolam-chalk/20 text-kolam-chalk/80 hover:text-kolam-chalk transition-all text-xs font-semibold flex items-center gap-1"
+            title="Configure 2-4 Players & Bots (Press P)"
+          >
+            <span>⚔️</span>
+            <span className="hidden sm:inline">Players</span>
+          </button>
+
           {/* Rules & Help Button */}
           <button
             onClick={() => setIsHelpOpen(true)}
@@ -225,6 +240,9 @@ export const App: React.FC = () => {
         assignedColor={onlineColor}
         isConnected={true}
       />
+
+      {/* Player & Match Setup Modal */}
+      <PlayerSetupModal isOpen={isSetupOpen} onClose={() => setIsSetupOpen(false)} />
 
       {/* Rules & Help Modal */}
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
