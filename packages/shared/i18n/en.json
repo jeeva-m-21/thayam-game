@@ -61,6 +61,23 @@
     "yellow": "Yellow",
     "blue": "Blue"
   },
+  "help": {
+    "title": "How to Play & Guide",
+    "rules_tab": "Sacred Rules",
+    "hotkeys_tab": "Hotkeys",
+    "audio_tab": "Sound & Audio",
+    "master_volume": "Master Sound Volume",
+    "sfx": "Sound Effects Audio",
+    "test_audio": "Test Sound Design",
+    "close": "Got it!"
+  },
+  "setup": {
+    "title": "Match Setup & Players",
+    "game_mode": "Game Mode",
+    "presets": "Quick Player Presets",
+    "seats": "Active Seats",
+    "start": "Start Match"
+  },
   "errors": {
     "reconnecting": "Connection lost. Reconnecting...",
     "disconnected": "Match ended — {{player}} disconnected."
