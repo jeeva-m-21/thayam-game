@@ -6,7 +6,7 @@ import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
 
 export const App: React.FC = () => {
-  const { mode, setMode, resetGame, gameState, history } = useGameStore();
+  const { mode, setMode, resetGame, gameState, history, aiDifficulty, setAiDifficulty } = useGameStore();
   const { t, i18n } = useTranslation();
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
 
@@ -67,6 +67,26 @@ export const App: React.FC = () => {
               {t('menu.pass_and_play')}
             </button>
           </div>
+
+          {/* AI Difficulty Selector */}
+          {mode === 'vs-ai' && (
+            <div className="flex bg-stone-ink/60 p-1 rounded-xl border border-kolam-chalk/15 text-xs">
+              {(['easy', 'medium', 'hard'] as const).map((diff) => (
+                <button
+                  key={diff}
+                  onClick={() => setAiDifficulty(diff)}
+                  className={`px-2 py-0.5 rounded-lg text-xs font-semibold capitalize transition-all ${
+                    aiDifficulty === diff
+                      ? 'bg-kolam-chalk/20 text-brass-bright shadow'
+                      : 'text-kolam-chalk/50 hover:text-kolam-chalk/80'
+                  }`}
+                  title={`AI Difficulty: ${diff}`}
+                >
+                  {diff}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Language Switch */}
           <button
