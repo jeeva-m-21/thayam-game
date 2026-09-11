@@ -186,11 +186,11 @@ export const Board2D: React.FC = () => {
                           if (chosenMove) makeMove(chosenMove);
                         }
                       }}
-                      className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-md border-2 transition-transform ${
+                      className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-md border-2 transition-all ${
                         isSelected
-                          ? 'ring-2 ring-white scale-125 z-30'
+                          ? 'animate-turn-halo ring-2 ring-brass-bright scale-125 z-30'
                           : canPick
-                          ? 'animate-bounce border-white'
+                          ? 'animate-pawn-hop border-white cursor-pointer ring-1 ring-white/50'
                           : 'border-black/40'
                       }`}
                       style={{ backgroundColor: COLOR_MAP[p.color] }}
