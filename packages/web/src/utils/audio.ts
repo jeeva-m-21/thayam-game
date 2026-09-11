@@ -105,6 +105,33 @@ class SoundManager {
     osc2.stop(now + 0.21);
   }
 
+  // Bonus roll fanfare / temple brass bell chime (Thayam 1, 5, 6, 12)
+  public playBonusRoll(value: number) {
+    if (this.muted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    // Ascending celebratory pentatonic bell chimes
+    const scale = value === 1 ? [523.25, 659.25, 783.99, 1046.5] : [587.33, 739.99, 880.0];
+    scale.forEach((freq, idx) => {
+      const osc = this.ctx!.createOscillator();
+      const gain = this.ctx!.createGain();
+      const startTime = now + idx * 0.08;
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+      gain.gain.setValueAtTime(0.22, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.28);
+
+      osc.connect(gain);
+      gain.connect(this.ctx!.destination);
+
+      osc.start(startTime);
+      osc.stop(startTime + 0.3);
+    });
+  }
+
   // Victory celebration chime
   public playVictory() {
     if (this.muted) return;

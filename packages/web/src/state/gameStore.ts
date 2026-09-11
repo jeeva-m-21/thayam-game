@@ -83,8 +83,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const roll = rollDice();
     const nextState = applyRoll(gameState, roll);
     const currColor = gameState.turnOrder[gameState.currentPlayerIndex];
-    useStatsStore.getState().recordRoll(currColor, isBonusRoll(roll.value));
-    const log = `${currColor} rolled ${roll.value} (${roll.dieA} + ${roll.dieB})`;
+    const isBonus = isBonusRoll(roll.value);
+    useStatsStore.getState().recordRoll(currColor, isBonus);
+    if (isBonus) {
+      setTimeout(() => soundManager.playBonusRoll(roll.value), 220);
+    }
+    const log = `${currColor} rolled ${roll.value} (${roll.dieA} + ${roll.dieB})${isBonus ? ' 🌟 BONUS ROLL!' : ''}`;
 
     set((s) => ({
       gameState: nextState,
