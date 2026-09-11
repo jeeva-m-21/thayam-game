@@ -14,8 +14,9 @@ import {
 import type { GameState, Move, PlayerColor } from '@thayam/rules-engine';
 import { soundManager } from '../utils/audio';
 import { useStatsStore } from './statsStore';
+import { socketClient } from '../net/socketClient';
 
-export type GameMode = 'local' | 'vs-ai';
+export type GameMode = 'local' | 'vs-ai' | 'online';
 
 interface GameStore {
   mode: GameMode;
@@ -26,11 +27,15 @@ interface GameStore {
   history: string[];
   isMuted: boolean;
   lastCutCellId: string | null;
+  onlineRoomId: string | null;
+  onlineColor: PlayerColor | null;
+  isOnlineConnected: boolean;
 
   // Actions
   setMode: (mode: GameMode) => void;
   setAiDifficulty: (diff: 'easy' | 'medium' | 'hard') => void;
   toggleMute: () => void;
+  joinOnlineRoom: (roomId: string, color: PlayerColor) => void;
   resetGame: (players?: PlayerColor[]) => void;
   rollCurrentPlayer: () => void;
   selectPawn: (pawnId: number | null) => void;
@@ -47,10 +52,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
   history: ['Game initialized.'],
   isMuted: soundManager.isMuted(),
   lastCutCellId: null,
+  onlineRoomId: null,
+  onlineColor: null,
+  isOnlineConnected: false,
 
   setMode: (mode: GameMode) => {
     set({ mode });
     get().resetGame();
+  },
+
+  joinOnlineRoom: (roomId: string, color: PlayerColor) => {
+    socketClient.connect();
+    socketClient.joinRoom(roomId, color);
+    set({
+      mode: 'online',
+      onlineRoomId: roomId,
+      onlineColor: color,
+      isOnlineConnected: true,
+      history: [`Joined online room ${roomId} as ${color}.`, ...get().history],
+    });
+
+    socketClient.onRoomState((payload) => {
+      set({ gameState: payload.gameState });
+    });
+
+    socketClient.onMoveRejected((err) => {
+      set({ history: [`Server rejected move: ${err.error}`, ...get().history] });
+    });
   },
 
   toggleMute: () => {
@@ -78,6 +106,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
   rollCurrentPlayer: () => {
     const { gameState, mode, triggerAiTurnIfNeeded } = get();
     if (gameState.phase !== 'waiting-for-roll') return;
+
+    if (mode === 'online') {
+      soundManager.playDiceRoll();
+      socketClient.rollDice();
+      return;
+    }
 
     soundManager.playDiceRoll();
     const roll = rollDice();
@@ -109,6 +143,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   makeMove: (move: Move) => {
     const { gameState, mode } = get();
     if (gameState.phase !== 'waiting-for-move') return;
+
+    if (mode === 'online') {
+      soundManager.playPawnMove();
+      socketClient.makeMove(move);
+      set({ selectedPawnId: null });
+      return;
+    }
 
     const movingPawn = gameState.players[move.playerColor].pawns.find((p) => p.id === move.pawnId);
     const fromPos = movingPawn ? movingPawn.position : -1;

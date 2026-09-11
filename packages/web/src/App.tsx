@@ -3,6 +3,7 @@ import { Board2D } from './ui/Board2D';
 import { Scene3D } from './scenes/Scene3D';
 import { DiceControls } from './ui/DiceControls';
 import { StatsModal } from './ui/StatsModal';
+import { MultiplayerModal } from './ui/MultiplayerModal';
 import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
 
@@ -17,10 +18,15 @@ export const App: React.FC = () => {
     setAiDifficulty,
     isMuted,
     toggleMute,
+    onlineRoomId,
+    onlineColor,
+    isOnlineConnected,
+    joinOnlineRoom,
   } = useGameStore();
   const { t, i18n } = useTranslation();
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
   const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isMultiplayerOpen, setIsMultiplayerOpen] = useState(false);
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
@@ -77,6 +83,14 @@ export const App: React.FC = () => {
               }`}
             >
               {t('menu.pass_and_play')}
+            </button>
+            <button
+              onClick={() => setIsMultiplayerOpen(true)}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                mode === 'online' ? 'bg-brass text-stone-ink shadow' : 'text-kolam-chalk/70'
+              }`}
+            >
+              {t('menu.online')}
             </button>
           </div>
 
@@ -185,6 +199,19 @@ export const App: React.FC = () => {
 
       {/* Match Statistics Modal */}
       <StatsModal isOpen={isStatsOpen} onClose={() => setIsStatsOpen(false)} />
+
+      {/* Online Multiplayer Modal */}
+      <MultiplayerModal
+        isOpen={isMultiplayerOpen}
+        onClose={() => setIsMultiplayerOpen(false)}
+        onJoinRoom={(roomId, color) => {
+          joinOnlineRoom(roomId, color);
+          setIsMultiplayerOpen(false);
+        }}
+        currentRoomId={onlineRoomId}
+        assignedColor={onlineColor}
+        isConnected={true}
+      />
     </div>
   );
 };
