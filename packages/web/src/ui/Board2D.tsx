@@ -34,7 +34,7 @@ const COLOR_MAP: Record<PlayerColor, string> = {
 };
 
 export const Board2D: React.FC = () => {
-  const { gameState, selectedPawnId, selectPawn, makeMove } = useGameStore();
+  const { gameState, selectedPawnId, selectPawn, makeMove, lastCutCellId } = useGameStore();
   const [hoveredCellInfo, setHoveredCellInfo] = React.useState<string | null>(null);
   const activeColor = gameState.turnOrder[gameState.currentPlayerIndex];
   const activePlayer = gameState.players[activeColor];
@@ -163,6 +163,16 @@ export const Board2D: React.FC = () => {
               {/* Target indicator ring */}
               {isTarget && (
                 <div className="absolute inset-0.5 rounded-lg border-2 border-dashed border-kolam-chalk animate-pulse" />
+              )}
+
+              {/* Cut explosion flash effect */}
+              {cellId === lastCutCellId && (
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-40 overflow-visible">
+                  <div className="absolute w-12 h-12 rounded-full bg-red-600/90 border-2 border-brass-bright animate-cut-flash" />
+                  <span className="text-[11px] font-black text-amber-300 drop-shadow-md z-50 tracking-wider whitespace-nowrap animate-bounce">
+                    ⚡ வெட்டு!
+                  </span>
+                </div>
               )}
 
               {/* Pawns on cell */}

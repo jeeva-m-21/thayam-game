@@ -7,6 +7,7 @@ import {
   rollDice,
   DEFAULT_BOARD,
   pickAiMove,
+  getCellIdAtPosition,
 } from '@thayam/rules-engine';
 import type { GameState, Move, PlayerColor } from '@thayam/rules-engine';
 import { soundManager } from '../utils/audio';
@@ -21,6 +22,7 @@ interface GameStore {
   isAiThinking: boolean;
   history: string[];
   isMuted: boolean;
+  lastCutCellId: string | null;
 
   // Actions
   setMode: (mode: GameMode) => void;
@@ -41,6 +43,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   isAiThinking: false,
   history: ['Game initialized.'],
   isMuted: soundManager.isMuted(),
+  lastCutCellId: null,
 
   setMode: (mode: GameMode) => {
     set({ mode });
@@ -99,8 +102,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (gameState.phase !== 'waiting-for-move') return;
 
     const nextState = applyMove(gameState, move);
+    let cutCell: string | null = null;
     if (move.cutsPawnIds.length > 0) {
       soundManager.playCut();
+      const path = gameState.board.players[move.playerColor];
+      cutCell = getCellIdAtPosition(path, move.toPosition);
     } else {
       soundManager.playPawnMove();
     }
@@ -111,7 +117,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     let log = `${move.playerColor} moved pawn ${move.pawnId + 1}`;
     if (move.cutsPawnIds.length > 0) {
-      log += ` & cut ${move.cutsPawnIds.length} opponent pawn(s)!`;
+      log += ` & cut ${move.cutsPawnIds.length} opponent pawn(s)! ⚡`;
     }
     if (nextState.winner) {
       log += ` 🏆 ${nextState.winner} WINS THE GAME!`;
@@ -121,7 +127,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
       gameState: nextState,
       selectedPawnId: null,
       history: [log, ...s.history].slice(0, 30),
+      lastCutCellId: cutCell,
     }));
+
+    if (cutCell) {
+      setTimeout(() => {
+        if (get().lastCutCellId === cutCell) {
+          set({ lastCutCellId: null });
+        }
+      }, 1000);
+    }
 
     if (mode === 'vs-ai') {
       setTimeout(() => get().triggerAiTurnIfNeeded(), 600);
