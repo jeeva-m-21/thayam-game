@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Board2D } from './ui/Board2D';
+import { Scene3D } from './scenes/Scene3D';
 import { DiceControls } from './ui/DiceControls';
 import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 export const App: React.FC = () => {
   const { mode, setMode, resetGame, gameState, history } = useGameStore();
   const { t, i18n } = useTranslation();
+  const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
@@ -15,10 +17,10 @@ export const App: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-between min-h-screen w-full p-3 md:p-6 max-w-5xl mx-auto">
       {/* Header Bar */}
-      <header className="flex items-center justify-between w-full max-w-[480px] md:max-w-4xl py-2">
+      <header className="flex flex-wrap items-center justify-between w-full max-w-[480px] md:max-w-4xl py-2 gap-2">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl md:text-3xl font-display font-bold text-brass-bright tracking-wide">
-            {t('game.title')}
+            Thayam: Veera Daayam
           </h1>
           <span className="text-xs px-2 py-0.5 rounded bg-kolam-chalk/10 text-kolam-chalk/60 font-mono">
             Classic 7×7
@@ -26,6 +28,26 @@ export const App: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* View Tier Switch (3D vs 2D fallback per design.md §5.5) */}
+          <div className="flex bg-stone-ink/60 p-1 rounded-xl border border-kolam-chalk/15">
+            <button
+              onClick={() => setViewMode('3d')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                viewMode === '3d' ? 'bg-brass text-stone-ink shadow' : 'text-kolam-chalk/70'
+              }`}
+            >
+              3D
+            </button>
+            <button
+              onClick={() => setViewMode('2d')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                viewMode === '2d' ? 'bg-brass text-stone-ink shadow' : 'text-kolam-chalk/70'
+              }`}
+            >
+              2D
+            </button>
+          </div>
+
           {/* Mode Switch */}
           <div className="flex bg-stone-ink/60 p-1 rounded-xl border border-kolam-chalk/15">
             <button
@@ -58,7 +80,7 @@ export const App: React.FC = () => {
 
       {/* Main Play Area */}
       <main className="flex flex-col md:flex-row items-center justify-center gap-6 w-full flex-1 my-2">
-        <Board2D />
+        {viewMode === '3d' ? <Scene3D /> : <Board2D />}
 
         <div className="flex flex-col gap-4 w-full max-w-[480px]">
           <DiceControls />
