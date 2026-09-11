@@ -4,6 +4,7 @@ import { Scene3D } from './scenes/Scene3D';
 import { DiceControls } from './ui/DiceControls';
 import { StatsModal } from './ui/StatsModal';
 import { MultiplayerModal } from './ui/MultiplayerModal';
+import { MoveLog } from './ui/MoveLog';
 import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
 
@@ -159,20 +160,7 @@ export const App: React.FC = () => {
 
         <div className="flex flex-col gap-4 w-full max-w-[480px]">
           <DiceControls />
-
-          {/* Event Log */}
-          <div className="w-full bg-stone-ink/60 border border-kolam-chalk/15 rounded-xl p-3 max-h-28 overflow-y-auto">
-            <span className="text-[10px] text-kolam-chalk/50 uppercase tracking-widest block mb-1">
-              Match Log
-            </span>
-            <div className="flex flex-col gap-1 text-xs text-kolam-chalk/80 font-mono">
-              {history.slice(0, 4).map((h, i) => (
-                <div key={i} className="leading-tight">
-                  • {h}
-                </div>
-              ))}
-            </div>
-          </div>
+          <MoveLog />
         </div>
       </main>
 
