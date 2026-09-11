@@ -6,7 +6,17 @@ import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
 
 export const App: React.FC = () => {
-  const { mode, setMode, resetGame, gameState, history, aiDifficulty, setAiDifficulty } = useGameStore();
+  const {
+    mode,
+    setMode,
+    resetGame,
+    gameState,
+    history,
+    aiDifficulty,
+    setAiDifficulty,
+    isMuted,
+    toggleMute,
+  } = useGameStore();
   const { t, i18n } = useTranslation();
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
 
@@ -87,6 +97,25 @@ export const App: React.FC = () => {
               ))}
             </div>
           )}
+
+          {/* Audio Mute/Unmute Toggle */}
+          <button
+            onClick={toggleMute}
+            className="p-1.5 rounded-xl bg-kolam-chalk/10 hover:bg-kolam-chalk/20 border border-kolam-chalk/20 text-kolam-chalk/80 hover:text-kolam-chalk transition-all"
+            title={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+            aria-label={isMuted ? 'Unmute Audio' : 'Mute Audio'}
+          >
+            {isMuted ? (
+              <svg className="w-4 h-4 text-floor-oxide" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 text-brass-bright" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+              </svg>
+            )}
+          </button>
 
           {/* Language Switch */}
           <button

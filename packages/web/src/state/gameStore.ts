@@ -20,10 +20,12 @@ interface GameStore {
   aiDifficulty: 'easy' | 'medium' | 'hard';
   isAiThinking: boolean;
   history: string[];
+  isMuted: boolean;
 
   // Actions
   setMode: (mode: GameMode) => void;
   setAiDifficulty: (diff: 'easy' | 'medium' | 'hard') => void;
+  toggleMute: () => void;
   resetGame: (players?: PlayerColor[]) => void;
   rollCurrentPlayer: () => void;
   selectPawn: (pawnId: number | null) => void;
@@ -38,10 +40,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
   aiDifficulty: 'medium',
   isAiThinking: false,
   history: ['Game initialized.'],
+  isMuted: soundManager.isMuted(),
 
   setMode: (mode: GameMode) => {
     set({ mode });
     get().resetGame();
+  },
+
+  toggleMute: () => {
+    const next = !get().isMuted;
+    soundManager.setMuted(next);
+    set({ isMuted: next });
   },
 
   setAiDifficulty: (aiDifficulty: 'easy' | 'medium' | 'hard') => {
