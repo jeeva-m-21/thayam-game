@@ -7,6 +7,7 @@ import { MultiplayerModal } from './ui/MultiplayerModal';
 import { MoveLog } from './ui/MoveLog';
 import { VictoryModal } from './ui/VictoryModal';
 import { HelpModal } from './ui/HelpModal';
+import { Toast } from './ui/Toast';
 import { useGameStore } from './state/gameStore';
 import { useTranslation } from 'react-i18next';
 
@@ -227,6 +228,9 @@ export const App: React.FC = () => {
 
       {/* Rules & Help Modal */}
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+
+      {/* Floating Notifications Toast */}
+      <Toast />
     </div>
   );
 };

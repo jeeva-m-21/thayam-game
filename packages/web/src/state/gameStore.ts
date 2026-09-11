@@ -30,11 +30,13 @@ interface GameStore {
   onlineRoomId: string | null;
   onlineColor: PlayerColor | null;
   isOnlineConnected: boolean;
+  toast: string | null;
 
   // Actions
   setMode: (mode: GameMode) => void;
   setAiDifficulty: (diff: 'easy' | 'medium' | 'hard') => void;
   toggleMute: () => void;
+  showToast: (msg: string) => void;
   joinOnlineRoom: (roomId: string, color: PlayerColor) => void;
   resetGame: (players?: PlayerColor[]) => void;
   rollCurrentPlayer: () => void;
@@ -55,6 +57,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
   onlineRoomId: null,
   onlineColor: null,
   isOnlineConnected: false,
+  toast: null,
+
+  showToast: (msg: string) => {
+    set({ toast: msg });
+    setTimeout(() => {
+      if (get().toast === msg) {
+        set({ toast: null });
+      }
+    }, 2400);
+  },
 
   setMode: (mode: GameMode) => {
     set({ mode });
@@ -123,6 +135,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       setTimeout(() => soundManager.playBonusRoll(roll.value), 220);
     }
     const log = `${currColor} rolled ${roll.value} (${roll.dieA} + ${roll.dieB})${isBonus ? ' 🌟 BONUS ROLL!' : ''}`;
+
+    const nextPlayer = nextState.turnOrder[nextState.currentPlayerIndex];
+    if (currColor !== nextPlayer) {
+      get().showToast(`No moves for ${currColor.toUpperCase()} on ${roll.value}. Turn passed to ${nextPlayer.toUpperCase()}`);
+    } else if (isBonus) {
+      get().showToast(`🌟 ${currColor.toUpperCase()} rolled ${roll.value}! Bonus roll granted!`);
+    }
 
     set((s) => ({
       gameState: nextState,
